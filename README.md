@@ -85,3 +85,7 @@ python -m mtg_oiqa.train \
 - The reproduction now includes a bidirectional pseudo-reference module and a multi-scale
   bi-stream fusion head (BS-MSFA) to more closely match the paper. These remain lightweight
   CNN-based versions to keep the baseline runnable while we iterate.
+- The current model uses ResNet50 backbones as a placeholder for the global branch (VMamba
+  is not yet integrated).
+- Bidirectional pseudo-reference and BS-MSFA fusion are simplified to a mean aggregation and
+  a shared MLP fusion head. These can be replaced as we expand the reproduction.
