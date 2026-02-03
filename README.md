@@ -23,6 +23,34 @@ view_ports/
   ref/
 ```
 
+## Download CVIQ (optional)
+
+```bash
+python -m pip install gdown
+mkdir -p data
+gdown --id 12E-sDZOq0DfCtNNwdyer7azfLZNNva6N -O data/CVIQ.zip
+unzip -q data/CVIQ.zip -d data
+```
+
+> Note: this download is only for local validation in the Codex environment. If you already
+> have CVIQ prepared in your own `data/` structure, you can skip this section.
+
+Then verify the dataset layout (including the viewport folders):
+
+```bash
+python scripts/verify_cviq.py --data-root data/CVIQ --viewports-root data/view_ports
+```
+
+## Viewport tool (MATLAB)
+
+The `twentyviewportstool.zip` file (from the main branch upload) can be unpacked with:
+
+```bash
+python scripts/unpack_viewport_tool.py --zip-path twentyviewportstool.zip
+```
+
+The extracted MATLAB scripts will be placed under `tools/twenty_viewports/`.
+
 ## Annotation CSV
 
 Create `data/cviq_annotations.csv` with at least the following columns:
