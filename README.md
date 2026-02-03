@@ -1,20 +1,86 @@
-我们首先复现CVIQ数据集上的实验。目前CVIQ数据集下的文件结构如下：
+# Multi-task Guided OIQA (CVIQ)
+
+This repo starts a reproducible baseline for the CVIQ experiments described in
+"Multi-task Guided No-Reference Omnidirectional Image Quality Assessment with Feature Interaction".
+The current implementation focuses on dataset loading, a multi-task training loop, and a
+baseline model that mirrors the local/global fusion + auxiliary heads described in the paper.
+
+## Dataset layout
+
+```
 CVIQ/
-下面是从001.png到544.png共544张图片。
+  001.png
+  ...
+  544.png
 
-我已经把它们分好了视口，视口如下的文件结构如下：
 view_ports/
-下面是
-AVC/
-HEVC/
-JPEG/
-ref/
-四个文件夹下分别储存三种压缩格式的图片和参考图
-其下面分别是
-xxx_fov1.png, xxx_fov2.png, ..., xxx_fov20.png
-也就是xxx的20个视口。
-比如对于图片544.png，这就有视口 544_fov1.png, ..., 544_fov20.png 这二十张视口图。
+  AVC/
+    001_fov1.png
+    ...
+    001_fov20.png
+  HEVC/
+  JPEG/
+  ref/
+```
 
-每张完整图片，如003.png 都是4096*2048尺寸。每个视口图，如003_fov9.png 都是256*256尺寸。
+## Download CVIQ (optional)
 
-开始写这个项目代码。
+```bash
+python -m pip install gdown
+mkdir -p data
+gdown --id 12E-sDZOq0DfCtNNwdyer7azfLZNNva6N -O data/CVIQ.zip
+unzip -q data/CVIQ.zip -d data
+```
+
+> Note: this download is only for local validation in the Codex environment. If you already
+> have CVIQ prepared in your own `data/` structure, you can skip this section.
+
+Then verify the dataset layout (including the viewport folders):
+
+```bash
+python scripts/verify_cviq.py --data-root data/CVIQ --viewports-root data/view_ports
+```
+
+## Viewport tool (MATLAB)
+
+The `twentyviewportstool.zip` file (from the main branch upload) can be unpacked with:
+
+```bash
+python scripts/unpack_viewport_tool.py --zip-path twentyviewportstool.zip
+```
+
+The extracted MATLAB scripts will be placed under `tools/twenty_viewports/`.
+
+## Annotation CSV
+
+Create `data/cviq_annotations.csv` with at least the following columns:
+
+| column | description |
+| --- | --- |
+| image_id | image ID, e.g. `1` or `001` |
+| mos | mean opinion score |
+| compression_type | `JPEG`, `AVC`, or `HEVC` |
+| distortion_level | integer label for compression strength |
+
+Example row:
+
+```
+image_id,mos,compression_type,distortion_level
+1,62.5,HEVC,3
+```
+
+## Train
+
+```bash
+python -m mtg_oiqa.train \
+  --annotations data/cviq_annotations.csv \
+  --data-root data/CVIQ \
+  --viewports-root data/view_ports
+```
+
+## Notes
+
+- The current model uses ResNet50 backbones as a placeholder for the global branch (VMamba
+  is not yet integrated).
+- Bidirectional pseudo-reference and BS-MSFA fusion are simplified to a mean aggregation and
+  a shared MLP fusion head. These can be replaced as we expand the reproduction.
